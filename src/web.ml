@@ -22,8 +22,6 @@ type 'a http_context =
 
 type 'a web_server = 'a http_context -> ('a http_context option) Lwt.t
 
-type 't f_filter = 't -> ('t option) Lwt.t
-
 let middleware_combine (first_filter: 'a web_server ) (second_filter: 'a web_server ) (ctx: 'a http_context) =
   let%lwt result1 = first_filter ctx  in
   let res = match result1 with

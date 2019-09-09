@@ -16,13 +16,8 @@ depends: [
   "core"
   "httpaf"
   "httpaf-lwt-unix"
-  "base"
-  "stdio"
   "lwt"
-  "routes"
-  "core"
   "fmt"
   "logs"
   "alcotest"
-  "bigstringaf"
 ]
