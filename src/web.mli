@@ -1,4 +1,3 @@
-
 type http_request =
   { meth: Httpaf.Method.t
   ; path: string
@@ -8,8 +7,8 @@ type http_request =
   ; query_params: (string * string) list }
 
 type http_response = {
-    status_code: Httpaf.Status.t; 
-    body: string; 
+    status_code: Httpaf.Status.t;
+    body: string;
     headers: (string * string) list
 }
 
@@ -26,19 +25,17 @@ val middleware_combine : 'a web_server -> 'a web_server -> 'a http_context -> 'a
 val bad_request : string -> 'a http_context -> 'a http_context option Lwt.t
 val ok : string -> 'a http_context -> 'a http_context option Lwt.t
 
-module Helpers :sig 
+module Helpers :sig
     val as_json : 'a http_context -> 'a http_context Lwt.t
 end
 
-module Infix : sig 
-    val (<|>) :'a web_server -> 'a web_server -> 'a http_context -> 'a http_context option Lwt.t 
+module Infix : sig
+    val (<|>) :'a web_server -> 'a web_server -> 'a http_context -> 'a http_context option Lwt.t
 end
 
 module Router  : sig
-    val remove_empty_strings : string Core.List.t -> string Core.List.t
     val pull_path_param : Core.String.t -> Core.String.t
     val parse_query_params : Core.String.t -> (Core.String.t * Core.String.t) Core.List.t
-    val parse_whiles_going_right : Core.String.t Core.List.t -> Core.String.t Core.List.t -> (Core.String.t * Core.String.t) Base__List.t -> bool * (Core.String.t * Core.String.t) Base__List.t
     val parse_route : string -> string -> 'a http_context -> bool * 'a http_context
 end
 

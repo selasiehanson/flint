@@ -1,7 +1,7 @@
 (library
  (name flint)
  (public_name flint)
- (libraries core httpaf httpaf-lwt-unix lwt lwt.unix fmt
-   fmt.tty logs logs.fmt)
+ (libraries core httpaf httpaf-lwt-unix lwt lwt.unix fmt fmt.tty logs
+   logs.fmt)
  (preprocess
   (pps lwt_ppx)))
