@@ -18,7 +18,7 @@ let make_response status_code headers body = {status_code; body; headers}
 
 type 'a http_context = {request: http_request; response: http_response; state: 'a; continue: bool}
 
-type 'a web_server = 'a http_context -> 'a http_context option Lwt.t
+type 'a server = 'a http_context -> 'a http_context option Lwt.t
 
 let middleware_combine first_filter second_filter ctx =
   let%lwt result1 = first_filter ctx in
@@ -119,7 +119,6 @@ module Router = struct
         else (false, ctx)
 end
 
-
 let get_content_length s = String.length s
 
 let respond_with_text reqd status result =
@@ -159,8 +158,7 @@ let read_request_body reqd =
       Lwt.return_unit) ;
   next
 
-
-let make_router (routes : (Httpaf.Method.t * string * 'a web_server) list) app_state =
+let make_router (routes : (Httpaf.Method.t * string * 'a server) list) app_state =
   let request_handler _ reqd =
     let open Lwt.Infix in
     read_request_body reqd
@@ -194,7 +192,6 @@ let make_router (routes : (Httpaf.Method.t * string * 'a web_server) list) app_s
   in
   request_handler
 
-
 let error_handler _ ?request:_ error start_response =
   let response_body = start_response Headers.empty in
   ( match error with
@@ -204,5 +201,3 @@ let error_handler _ ?request:_ error start_response =
   | #Status.standard as error ->
       Body.write_string response_body (Status.default_reason_phrase error) ) ;
   Body.close_writer response_body
-
-
