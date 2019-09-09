@@ -1,0 +1,26 @@
+opam-version: "2.0"
+name: "flint"
+version: "0.0.1"
+synopsis: "Simpler api over httpaf"
+description: "Simpler api over httpaf"
+maintainer: "Selasie Hanson <soundfever18@gmail.com>"
+authors: [ "Selasie Hanson <soundfever18@gmail.com>"]
+license: "MIT"
+build: [
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "ocaml" {>= "4.07.0"}
+  "dune" {build}
+  "core"
+  "httpaf"
+  "httpaf-lwt-unix"
+  "base"
+  "stdio"
+  "lwt"
+  "routes"
+  "core"
+  "fmt"
+  "logs"
+]
