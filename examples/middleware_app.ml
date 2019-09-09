@@ -19,16 +19,13 @@ let user_name_begins_with_letter_a_middleware (ctx: 'a Web.http_context) =
 let happy (ctx: 'a Web.http_context) =
   Web.ok "we are happy" ctx
 
-let ok_me ctx =
-  let open Web.Infix in
-  let handler = just_log_something <|> happy in
-  handler ctx
 
 (* /combining middlewares into one single handler/ *)
 let test_multis ctx =
   let open Web.Infix in
   let combined_handler = just_log_something <|> user_name_begins_with_letter_a_middleware <|> happy in
   combined_handler ctx
+
 
 let routes = [
     (`GET, "/hello", (fun ctx -> Web.ok "Hello World" ctx))
