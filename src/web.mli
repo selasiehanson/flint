@@ -44,7 +44,7 @@ val get_content_length : Core.String.t -> int
 
 val read_request_body : Httpaf.Reqd.t -> string Lwt.t
 
-val make_cust_router :
+val make_router :
   (Httpaf.Method.t * string * 'a web_server) list -> 'a -> 'b -> Httpaf.Reqd.t -> unit
 
 val error_handler : Unix.sockaddr -> Httpaf.Server_connection.error_handler

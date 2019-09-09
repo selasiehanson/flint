@@ -7,7 +7,7 @@ let setup_logger () =
   Logs.set_level (Some Logs.Debug) ;
   Logs.set_reporter (Logs_fmt.reporter ())
 
-let make_custom_handler routes = Web.make_cust_router routes
+let make_custom_handler routes = Web.make_router routes
 
 let program port routes (application_state : 'a) =
   let listen_address = Unix.(ADDR_INET (inet_addr_loopback, port)) in

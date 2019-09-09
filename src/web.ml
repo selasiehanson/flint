@@ -160,7 +160,7 @@ let read_request_body reqd =
   next
 
 
-let make_cust_router (routes : (Httpaf.Method.t * string * 'a web_server) list) app_state =
+let make_router (routes : (Httpaf.Method.t * string * 'a web_server) list) app_state =
   let request_handler _ reqd =
     let open Lwt.Infix in
     read_request_body reqd
