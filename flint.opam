@@ -1,8 +1,8 @@
 opam-version: "2.0"
 name: "flint"
 version: "0.0.1"
-synopsis: "Simpler api over httpaf"
-description: "Simpler api over httpaf"
+synopsis: "Simple api over httpaf"
+description: "Simple api over httpaf"
 maintainer: "Selasie Hanson <soundfever18@gmail.com>"
 authors: [ "Selasie Hanson <soundfever18@gmail.com>"]
 license: "MIT"
@@ -23,4 +23,6 @@ depends: [
   "core"
   "fmt"
   "logs"
+  "alcotest"
+  "bigstringaf"
 ]

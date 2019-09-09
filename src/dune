@@ -1,4 +1,7 @@
 (library
  (name flint)
+ (libraries httpaf httpaf-lwt-unix base stdio lwt lwt.unix routes core fmt
+   fmt.tty logs logs.fmt)
  (public_name flint)
- )
+ (preprocess
+  (pps lwt_ppx)))

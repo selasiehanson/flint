@@ -1,4 +1,3 @@
 (executables
- (names test )
- (libraries flint alcotest)
- )
+ (names test)
+ (libraries flint alcotest))
