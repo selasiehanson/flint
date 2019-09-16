@@ -46,12 +46,12 @@ let ok (body : string) (ctx : 'a http_context) =
   let modified_response = {ctx.response with body; status_code= `OK} in
   Some {ctx with response= modified_response} |> Lwt.return
 
-module Helpers = struct
+module Writers = struct
   let as_json ctx =
     let old_headers = ctx.response.headers in
     let updated_headers = old_headers @ [("Content-Type", "application/json")] in
     let new_ctx = {ctx with response= {ctx.response with headers= updated_headers}} in
-    new_ctx |> Lwt.return
+    new_ctx 
 end
 
 module Router = struct

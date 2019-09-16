@@ -23,8 +23,9 @@ val bad_request : string -> 'a http_context -> 'a http_context option Lwt.t
 
 val ok : string -> 'a http_context -> 'a http_context option Lwt.t
 
-module Helpers : sig
-  val as_json : 'a http_context -> 'a http_context Lwt.t
+module Writers : sig
+  (* todo define other mime types *)
+  val as_json : 'a http_context -> 'a http_context
 end
 
 module Infix : sig
