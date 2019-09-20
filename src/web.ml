@@ -47,11 +47,25 @@ let ok (body : string) (ctx : 'a http_context) =
   Some {ctx with response= modified_response} |> Lwt.return
 
 module Writers = struct
-  let as_json ctx =
+  let as_mime mime ctx =
     let old_headers = ctx.response.headers in
-    let updated_headers = old_headers @ [("Content-Type", "application/json")] in
+    let updated_headers = old_headers @ [("Content-Type", mime)] in
     let new_ctx = {ctx with response= {ctx.response with headers= updated_headers}} in
-    new_ctx 
+    new_ctx
+
+  let as_json ctx = as_mime "application/json" ctx
+
+  let as_html ctx = as_mime "text/html" ctx
+end
+
+module Readers = struct
+  let from_params key ctx =
+    let params = ctx.request.path_params in
+    List.find
+      ~f:(fun p ->
+        let key', _ = p in
+        key = key')
+      params
 end
 
 module Router = struct

@@ -25,7 +25,15 @@ val ok : string -> 'a http_context -> 'a http_context option Lwt.t
 
 module Writers : sig
   (* todo define other mime types *)
+  val as_mime : string -> 'a http_context -> 'a http_context
+
   val as_json : 'a http_context -> 'a http_context
+
+  val as_html : 'a http_context -> 'a http_context
+end
+
+module Readers : sig
+  val from_params : string -> 'a http_context -> (string * string) option
 end
 
 module Infix : sig
