@@ -30,6 +30,6 @@ let routes =
   ; (`GET, "/test-multi-middlewares", test_multis) ]
 
 let () =
-  let port = 9000 in
+  let config = {port= 9000} in
   let state = {user_id= "xxx"; user_authenticated= false} in
-  Flint.program port routes state |> Lwt_main.run
+  Flint.program config routes state |> Lwt_main.run

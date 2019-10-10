@@ -13,6 +13,6 @@ let routes =
   ; (`GET, "/json-message", json_example_handler) ]
 
 let () =
-  let port = 9000 in
+  let config : Flint.config = {port= 9000} in
   let state = {user_id= "123"; user_authenticated= false} in
-  Flint.program port routes state |> Lwt_main.run
+  Flint.program config routes state |> Lwt_main.run
