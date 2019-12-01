@@ -59,12 +59,12 @@ module Writers = struct
 end
 
 module Readers = struct
-  let from_params (key:string) ctx =
+  let from_params (string_key:string) ctx =
     let params : ((string * string) list ) = ctx.request.path_params in
     List.find
       ~f:(fun p ->
         let (key': string) , _ = p in
-        key = key')
+        string_key = key')
       params
 end
 
