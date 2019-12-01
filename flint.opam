@@ -13,7 +13,7 @@ build: [
 depends: [
   "ocaml" {>= "4.07.0"}
   "dune" {build}
-  "core"
+  "core" {"13.0.0"}
   "httpaf"
   "httpaf-lwt-unix"
   "lwt"

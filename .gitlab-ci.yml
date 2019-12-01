@@ -1,0 +1,30 @@
+image: ocaml/opam2:4.08
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+before_script:
+- sudo apt-get update -qq
+- sudo apt-get install -y --no-install-recommends apt-utils
+- sudo apt-get install -y -qq postgresql postgresql-contrib libpq-dev libsqlite3-dev cmake nodejs
+- opam repo set-url default https://opam.ocaml.org
+- opam depext conf-m4
+
+build:
+  stage: build
+  script:
+  - opam pin add flint.dev -n .
+  - opam depext -yt flint
+  - opam install -t . --deps-only
+  - opam exec -- dune build @all
+  - opam exec -- dune runtest
+  artifacts:
+    paths:
+    - _build
+
+test:
+  stage: test
+  script:
+  - opam install -y -t .
+
+
