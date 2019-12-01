@@ -1,4 +1,6 @@
 [] Session & Cookies
-[] Static files
+[] Static files / static serve
 [] Websockets
 [] Global middlewares
+[] Tests
+

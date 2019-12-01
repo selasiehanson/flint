@@ -17,6 +17,7 @@ depends: [
   "httpaf"
   "httpaf-lwt-unix"
   "lwt"
+  "lwt_ppx"
   "fmt"
   "logs"
   "alcotest"
