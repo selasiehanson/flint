@@ -1,7 +1,7 @@
 type http_request =
   { meth: Httpaf.Method.t
   ; path: string
-  ; headers: (string * string) list
+  ; headers: Httpaf.Headers.t 
   ; body: string option
   ; path_params: (string * string) list
   ; query_params: (string * string) list }
@@ -9,7 +9,7 @@ type http_request =
 type http_response = {status_code: Httpaf.Status.t; body: string; headers: (string * string) list}
 
 val make_request :
-  Httpaf.Method.t -> string -> (string * string) list -> string option -> http_request
+  Httpaf.Method.t -> string -> Httpaf.Headers.t -> string option -> http_request
 
 val make_response : Httpaf.Status.t -> (string * string) list -> string -> http_response
 

@@ -4,7 +4,7 @@ open Httpaf
 type http_request =
   { meth: Httpaf.Method.t
   ; path: string
-  ; headers: (string * string) list
+  ; headers: Httpaf.Headers.t
   ; body: string option
   ; path_params: (string * string) list
   ; query_params: (string * string) list }
@@ -59,11 +59,11 @@ module Writers = struct
 end
 
 module Readers = struct
-  let from_params (string_key:string) ctx =
-    let params : ((string * string) list ) = ctx.request.path_params in
+  let from_params (string_key : string) ctx =
+    let params : (string * string) list = ctx.request.path_params in
     List.find
       ~f:(fun p ->
-        let (key': string) , _ = p in
+        let (key' : string), _ = p in
         string_key = key')
       params
 end
@@ -142,9 +142,9 @@ let respond_with_text reqd status result =
   in
   Reqd.respond_with_string reqd (Response.create ~headers status) result.body
 
-let make_ctx app_state meth path body =
+let make_ctx app_state meth path body initial_headers =
   let initial_ctx =
-    { request= make_request meth path [] body
+    { request= make_request meth path initial_headers body
     ; response= make_response `Not_found [] ""
     ; state= app_state
     ; continue= true }
@@ -179,7 +179,7 @@ let make_router (routes : (Httpaf.Method.t * string * 'a server) list) app_state
     >|= (fun body ->
           log_request (Reqd.request reqd) body ;
           let req = Reqd.request reqd in
-          let initial_ctx = make_ctx app_state req.Request.meth req.target (Some body) in
+          let initial_ctx = make_ctx app_state req.Request.meth req.target (Some body) req.headers in
           let found_handler =
             List.find routes ~f:(fun (meth, structure, _handler) ->
                 let is_match, _updated_context =
@@ -191,7 +191,7 @@ let make_router (routes : (Httpaf.Method.t * string * 'a server) list) app_state
           | None -> respond_with_text reqd `Not_found initial_ctx.response
           | Some (_, structure, handler) ->
               (* Todo: Fix this double call *)
-              (* We are calling this seccond time cos we need to the update context *)
+              (* We are calling this a second time cos we need to the update context *)
               let _, updated_context = Router.parse_route structure req.target initial_ctx in
               let result' = updated_context |> handler in
               let out =
