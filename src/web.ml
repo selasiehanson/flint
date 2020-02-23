@@ -2,21 +2,32 @@ open Core
 open Httpaf
 
 type http_request =
-  { meth: Httpaf.Method.t
-  ; path: string
-  ; headers: Httpaf.Headers.t
-  ; body: string option
-  ; path_params: (string * string) list
-  ; query_params: (string * string) list }
+  { meth : Httpaf.Method.t
+  ; path : string
+  ; headers : Httpaf.Headers.t
+  ; body : string option
+  ; path_params : (string * string) list
+  ; query_params : (string * string) list
+  }
 
-type http_response = {status_code: Status.t; body: string; headers: (string * string) list}
+type http_response =
+  { status_code : Status.t
+  ; body : string
+  ; headers : (string * string) list
+  }
 
 let make_request meth path headers body =
-  {meth; path; headers; body; path_params= []; query_params= []}
+  { meth; path; headers; body; path_params = []; query_params = [] }
 
-let make_response status_code headers body = {status_code; body; headers}
 
-type 'a http_context = {request: http_request; response: http_response; state: 'a; continue: bool}
+let make_response status_code headers body = { status_code; body; headers }
+
+type 'a http_context =
+  { request : http_request
+  ; response : http_response
+  ; state : 'a
+  ; continue : bool
+  }
 
 type 'a server = 'a http_context -> 'a http_context option Lwt.t
 
@@ -26,10 +37,12 @@ let middleware_combine first_filter second_filter ctx =
     match result1 with
     | None -> None |> Lwt.return
     | Some first_result_ctx ->
-        if first_result_ctx.continue then second_filter first_result_ctx
+        if first_result_ctx.continue
+        then second_filter first_result_ctx
         else Some first_result_ctx |> Lwt.return
   in
   res
+
 
 module Infix = struct
   let ( <|> ) = middleware_combine
@@ -39,19 +52,22 @@ include Infix
 
 (* Response Helpers *)
 let bad_request body (ctx : 'a http_context) =
-  let modified_response = {ctx.response with body; status_code= `Bad_request} in
-  Some {ctx with response= modified_response} |> Lwt.return
+  let modified_response = { ctx.response with body; status_code = `Bad_request } in
+  Some { ctx with response = modified_response } |> Lwt.return
+
 
 let ok (body : string) (ctx : 'a http_context) =
-  let modified_response = {ctx.response with body; status_code= `OK} in
-  Some {ctx with response= modified_response} |> Lwt.return
+  let modified_response = { ctx.response with body; status_code = `OK } in
+  Some { ctx with response = modified_response } |> Lwt.return
+
 
 module Writers = struct
   let as_mime mime ctx =
     let old_headers = ctx.response.headers in
-    let updated_headers = old_headers @ [("Content-Type", mime)] in
-    let new_ctx = {ctx with response= {ctx.response with headers= updated_headers}} in
+    let updated_headers = old_headers @ [ ("Content-Type", mime) ] in
+    let new_ctx = { ctx with response = { ctx.response with headers = updated_headers } } in
     new_ctx
+
 
   let as_json ctx = as_mime "application/json" ctx
 
@@ -79,14 +95,16 @@ module Router = struct
   let pull_path_param str =
     if String.length str > 1 then Caml.String.sub str 1 (String.length str - 1) else str
 
+
   (* Taking a string such as this split into tuples "a=q&b=c&d=1" *)
   let parse_query_params str =
     let pairs = String.split str ~on:'&' in
     let param_pairs =
       List.map pairs ~f:(fun pair ->
-          match String.split pair ~on:'=' with [key; value] -> (key, value) | _ -> ("", ""))
+          match String.split pair ~on:'=' with [ key; value ] -> (key, value) | _ -> ("", ""))
     in
     List.filter param_pairs ~f:(fun (k, v) -> not (k = "" && v = ""))
+
 
   (*remove the empty pair*)
 
@@ -96,16 +114,24 @@ module Router = struct
     | None, Some _ -> (false, [])
     | None, None -> (true, extracted_path_params_list)
     | Some a, Some b ->
-        if a = b && List.length structured_list = 1 then (true, extracted_path_params_list)
-        else if a = b then
+        if a = b && List.length structured_list = 1
+        then (true, extracted_path_params_list)
+        else if a = b
+        then
           let path_param_pair = (pull_path_param a, b) in
-          parse_whiles_going_right (List.drop structured_list 1) (List.drop path_segment_list 1)
-            (extracted_path_params_list @ [path_param_pair])
-        else if String.contains a ':' then
+          parse_whiles_going_right
+            (List.drop structured_list 1)
+            (List.drop path_segment_list 1)
+            (extracted_path_params_list @ [ path_param_pair ])
+        else if String.contains a ':'
+        then
           let path_param_pair = (pull_path_param a, b) in
-          parse_whiles_going_right (List.drop structured_list 1) (List.drop path_segment_list 1)
-            (extracted_path_params_list @ [path_param_pair])
+          parse_whiles_going_right
+            (List.drop structured_list 1)
+            (List.drop path_segment_list 1)
+            (extracted_path_params_list @ [ path_param_pair ])
         else (false, [])
+
 
   let parse_route (route_format : string) (in_url : string) (ctx : 'a http_context) =
     (* todo strip slashes at the ends of url *)
@@ -127,8 +153,9 @@ module Router = struct
     | false -> (false, ctx) (* return false lenghts are not the same *)
     | true ->
         let is_match, path_params = parse_whiles_going_right broken_structure broken_url [] in
-        if is_match = true then
-          let updated_context = {ctx with request= {ctx.request with path_params}} in
+        if is_match = true
+        then
+          let updated_context = { ctx with request = { ctx.request with path_params } } in
           (true, updated_context)
         else (false, ctx)
 end
@@ -138,18 +165,21 @@ let get_content_length s = String.length s
 let respond_with_text reqd status result =
   let headers =
     Headers.of_list
-      ([("content-length", string_of_int (get_content_length result.body))] @ result.headers)
+      ([ ("content-length", string_of_int (get_content_length result.body)) ] @ result.headers)
   in
   Reqd.respond_with_string reqd (Response.create ~headers status) result.body
 
+
 let make_ctx app_state meth path body initial_headers =
   let initial_ctx =
-    { request= make_request meth path initial_headers body
-    ; response= make_response `Not_found [] ""
-    ; state= app_state
-    ; continue= true }
+    { request = make_request meth path initial_headers body
+    ; response = make_response `Not_found [] ""
+    ; state = app_state
+    ; continue = true
+    }
   in
   initial_ctx
+
 
 let log_request req (body : string) =
   let time_of_request = Time.now () |> Time.to_string in
@@ -157,6 +187,7 @@ let log_request req (body : string) =
   let path = req.target in
   Logs.info (fun m -> m "%s - %s %s" time_of_request meth_as_string path) ;
   if body <> "" then Logs.info (fun m -> m "%s" body)
+
 
 let read_request_body reqd =
   let next, awake = Lwt.wait () in
@@ -171,6 +202,7 @@ let read_request_body reqd =
       Body.schedule_read (Reqd.request_body reqd) ~on_eof ~on_read ;
       Lwt.return_unit) ;
   next
+
 
 let make_router (routes : (Httpaf.Method.t * string * 'a server) list) app_state =
   let request_handler _ reqd =
@@ -207,6 +239,7 @@ let make_router (routes : (Httpaf.Method.t * string * 'a server) list) app_state
     |> ignore
   in
   request_handler
+
 
 let error_handler _ ?request:_ error start_response =
   let response_body = start_response Headers.empty in

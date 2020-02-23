@@ -1,19 +1,28 @@
 type http_request =
-  { meth: Httpaf.Method.t
-  ; path: string
-  ; headers: Httpaf.Headers.t 
-  ; body: string option
-  ; path_params: (string * string) list
-  ; query_params: (string * string) list }
+  { meth : Httpaf.Method.t
+  ; path : string
+  ; headers : Httpaf.Headers.t
+  ; body : string option
+  ; path_params : (string * string) list
+  ; query_params : (string * string) list
+  }
 
-type http_response = {status_code: Httpaf.Status.t; body: string; headers: (string * string) list}
+type http_response =
+  { status_code : Httpaf.Status.t
+  ; body : string
+  ; headers : (string * string) list
+  }
 
-val make_request :
-  Httpaf.Method.t -> string -> Httpaf.Headers.t -> string option -> http_request
+val make_request : Httpaf.Method.t -> string -> Httpaf.Headers.t -> string option -> http_request
 
 val make_response : Httpaf.Status.t -> (string * string) list -> string -> http_response
 
-type 'a http_context = {request: http_request; response: http_response; state: 'a; continue: bool}
+type 'a http_context =
+  { request : http_request
+  ; response : http_response
+  ; state : 'a
+  ; continue : bool
+  }
 
 type 'a server = 'a http_context -> 'a http_context option Lwt.t
 
