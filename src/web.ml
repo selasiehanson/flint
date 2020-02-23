@@ -179,7 +179,9 @@ let make_router (routes : (Httpaf.Method.t * string * 'a server) list) app_state
     >|= (fun body ->
           log_request (Reqd.request reqd) body ;
           let req = Reqd.request reqd in
-          let initial_ctx = make_ctx app_state req.Request.meth req.target (Some body) req.headers in
+          let initial_ctx =
+            make_ctx app_state req.Request.meth req.target (Some body) req.headers
+          in
           let found_handler =
             List.find routes ~f:(fun (meth, structure, _handler) ->
                 let is_match, _updated_context =
