@@ -1,5 +1,6 @@
 open Core
 open Httpaf
+module String = Core.String
 
 type http_request =
   { meth : Httpaf.Method.t
@@ -80,7 +81,7 @@ module Readers = struct
     List.find
       ~f:(fun p ->
         let (key' : string), _ = p in
-        string_key = key')
+        String.(string_key = key'))
       params
 end
 
@@ -89,7 +90,7 @@ module Router = struct
   (* [(`GET, "users/:id" , User.get ) *)
   (* ;(`GET, "greet/hello" , (fun ctx -> Web.ok ctx) )] *)
 
-  let remove_empty_strings list = List.filter ~f:(fun t -> t = "" |> not) list
+  let remove_empty_strings list = List.filter ~f:(fun t -> String.(t = "") |> not) list
 
   (* Given a string such as :name return name *)
   let pull_path_param str =
@@ -103,7 +104,7 @@ module Router = struct
       List.map pairs ~f:(fun pair ->
           match String.split pair ~on:'=' with [ key; value ] -> (key, value) | _ -> ("", ""))
     in
-    List.filter param_pairs ~f:(fun (k, v) -> not (k = "" && v = ""))
+    List.filter param_pairs ~f:(fun (k, v) -> not (String.(k = "" && v = "")))
 
 
   (*remove the empty pair*)
@@ -113,10 +114,10 @@ module Router = struct
     | Some _, None -> (false, [])
     | None, Some _ -> (false, [])
     | None, None -> (true, extracted_path_params_list)
-    | Some a, Some b ->
-        if a = b && List.length structured_list = 1
+    | Some (a:string), Some (b: string) ->
+        if String.(a = b) && List.length structured_list = 1
         then (true, extracted_path_params_list)
-        else if a = b
+        else if String.(a = b)
         then
           let path_param_pair = (pull_path_param a, b) in
           parse_whiles_going_right
@@ -153,7 +154,7 @@ module Router = struct
     | false -> (false, ctx) (* return false lenghts are not the same *)
     | true ->
         let is_match, path_params = parse_whiles_going_right broken_structure broken_url [] in
-        if is_match = true
+        if is_match 
         then
           let updated_context = { ctx with request = { ctx.request with path_params } } in
           (true, updated_context)
@@ -186,7 +187,7 @@ let log_request req (body : string) =
   let meth_as_string = Httpaf.Method.to_string req.Request.meth in
   let path = req.target in
   Logs.info (fun m -> m "%s - %s %s" time_of_request meth_as_string path) ;
-  if body <> "" then Logs.info (fun m -> m "%s" body)
+  if String.(body <> "") then Logs.info (fun m -> m "%s" body)
 
 
 let read_request_body reqd =
@@ -219,7 +220,7 @@ let make_router (routes : (Httpaf.Method.t * string * 'a server) list) app_state
                 let is_match, _updated_context =
                   Router.parse_route structure req.target initial_ctx
                 in
-                is_match = true && meth = req.Request.meth)
+                is_match &&  String.(Httpaf.Method.to_string(meth) = (req.Request.meth |> Httpaf.Method.to_string)))
           in
           match found_handler with
           | None -> respond_with_text reqd `Not_found initial_ctx.response
