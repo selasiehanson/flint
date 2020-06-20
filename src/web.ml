@@ -104,7 +104,7 @@ module Router = struct
       List.map pairs ~f:(fun pair ->
           match String.split pair ~on:'=' with [ key; value ] -> (key, value) | _ -> ("", ""))
     in
-    List.filter param_pairs ~f:(fun (k, v) -> not (String.(k = "" && v = "")))
+    List.filter param_pairs ~f:(fun (k, v) -> not String.(k = "" && v = ""))
 
 
   (*remove the empty pair*)
@@ -114,7 +114,7 @@ module Router = struct
     | Some _, None -> (false, [])
     | None, Some _ -> (false, [])
     | None, None -> (true, extracted_path_params_list)
-    | Some (a:string), Some (b: string) ->
+    | Some (a : string), Some (b : string) ->
         if String.(a = b) && List.length structured_list = 1
         then (true, extracted_path_params_list)
         else if String.(a = b)
@@ -154,7 +154,7 @@ module Router = struct
     | false -> (false, ctx) (* return false lenghts are not the same *)
     | true ->
         let is_match, path_params = parse_whiles_going_right broken_structure broken_url [] in
-        if is_match 
+        if is_match
         then
           let updated_context = { ctx with request = { ctx.request with path_params } } in
           (true, updated_context)
@@ -220,7 +220,9 @@ let make_router (routes : (Httpaf.Method.t * string * 'a server) list) app_state
                 let is_match, _updated_context =
                   Router.parse_route structure req.target initial_ctx
                 in
-                is_match &&  String.(Httpaf.Method.to_string(meth) = (req.Request.meth |> Httpaf.Method.to_string)))
+                is_match
+                && String.(
+                     Httpaf.Method.to_string meth = (req.Request.meth |> Httpaf.Method.to_string)))
           in
           match found_handler with
           | None -> respond_with_text reqd `Not_found initial_ctx.response
