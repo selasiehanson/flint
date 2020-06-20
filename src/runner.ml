@@ -26,3 +26,23 @@ let program config routes (application_state : 'a) =
       Stdio.printf "Listening on port :%d\n\n%!" config.port) ;
   let forever, _ = Lwt.wait () in
   forever
+
+(* let simple_request_handler reqd = *)
+(* let open Httpaf in *)
+(* let { Httpaf.Request.meth; target; _ } = Httpaf.Reqd.request reqd in *)
+(* match meth with *)
+(* | `GET -> *)
+(* ( match String.split_on_char '/' target with *)
+(* | "" :: "hello" :: rest -> *)
+(* let who = match rest with [] -> "world" | x :: _ -> x in *)
+(* let response_body = Printf.sprintf "Hello, %s" who in *)
+(* let headers = *)
+(* Headers.of_list [ ("Content-length", Int.to_string (String.length response_body)) ] *)
+(* in *)
+(* Reqd.respond_with_string reqd (Response.create ~headers `OK) response_body *)
+(* | _ -> *)
+(* let response_body = Printf.sprintf "%S not found\n" target in *)
+(* invalid_request reqd `Not_found response_body ) *)
+(* | meth -> *)
+(* let response_body = Printf.sprintf "%s is not an allowed method\n" (Method.to_string meth) in *)
+(* invalid_request reqd `Method_not_allowed response_body *)
