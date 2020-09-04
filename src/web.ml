@@ -62,6 +62,23 @@ let ok (body : string) (ctx : 'a http_context) =
   Some { ctx with response = modified_response } |> Lwt.return
 
 
+let unauthorized message (ctx : 'a http_context) =
+  let modified_response = { ctx.response with body = message; status_code = `Unauthorized } in
+  Some { ctx with response = modified_response } |> Lwt.return
+
+
+let not_found message (ctx : 'a http_context) =
+  let modified_response = { ctx.response with body = message; status_code = `Not_found } in
+  Some { ctx with response = modified_response } |> Lwt.return
+
+
+let internal_server_error message (ctx : 'a http_context) =
+  let modified_response =
+    { ctx.response with body = message; status_code = `Internal_server_error }
+  in
+  Some { ctx with response = modified_response } |> Lwt.return
+
+
 module Writers = struct
   let as_mime mime ctx =
     let old_headers = ctx.response.headers in
@@ -203,6 +220,45 @@ let read_request_body reqd =
       Body.schedule_read (Reqd.request_body reqd) ~on_eof ~on_read ;
       Lwt.return_unit) ;
   next
+
+
+(* Remove path parameters *)
+(* Remove the begginning and trailing slashes if the exist *)
+let path_from_url url =
+  let slash_strip_fn c = Char.(c = '/') in
+  url |> String.lstrip ~drop:slash_strip_fn |> String.rstrip ~drop:slash_strip_fn
+
+
+let handle_request route handlers meth =
+  let route_path = path_from_url route in
+  let parts = String.split route_path ~on:'/' in
+  List.iter parts ~f:(fun i -> print_endline i) ;
+  parts |> List.length |> string_of_int |> print_endline ;
+  handlers (meth, parts)
+
+
+let make_simple_handler handlers app_state =
+  let request_handler _ reqd =
+    let open Lwt.Infix in
+    read_request_body reqd
+    >|= (fun body ->
+          log_request (Reqd.request reqd) body ;
+          let req = Reqd.request reqd in
+          let initial_ctx =
+            make_ctx app_state req.Request.meth req.target (Some body) req.headers
+          in
+          let handle_fn = handle_request req.target handlers initial_ctx.request.meth in
+          let out =
+            handle_fn initial_ctx
+            >|= fun result ->
+            match result with
+            | None -> respond_with_text reqd `Not_found initial_ctx.response
+            | Some r -> respond_with_text reqd r.response.status_code r.response
+          in
+          out |> ignore)
+    |> ignore
+  in
+  request_handler
 
 
 let make_router (routes : (Httpaf.Method.t * string * 'a server) list) app_state =

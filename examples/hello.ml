@@ -6,19 +6,25 @@ type app_state =
   ; user_authenticated : bool
   }
 
-let json_example_handler ctx =
-  ctx |> Web.Writers.as_json |> Web.ok "{\"message\":\"a json response\"}"
+let json_handler ctx = ctx |> Web.Writers.as_json |> Web.ok "{\"message\":\"a json response\"}"
 
+module User_handler = struct
+  let show_user id ctx =
+    let res = "Showing info for user " ^ id in
+    ctx |> Web.ok res
+end
 
-(* Use your json library here *)
-
-let routes =
-  [ (`GET, "/hello", fun ctx -> Web.ok "Hello World" ctx)
-  ; (`GET, "/json-message", json_example_handler)
-  ]
+let handlers = function
+  | `GET, [ "hello" ] -> fun ctx -> Web.ok "Hello World" ctx
+  | `GET, [ "users"; (_ as id); "show" ] -> User_handler.show_user id
+  | `GET, [ "json" ] -> json_handler
+  | _ ->
+      fun ctx ->
+        print_endline "Not found" ;
+        ctx |> Web.not_found "not found"
 
 
 let () =
   let config : Flint.config = { port = 9000 } in
   let state = { user_id = "123"; user_authenticated = false } in
-  Flint.program config routes state |> Lwt_main.run
+  Flint.simple_program config handlers state |> Lwt_main.run

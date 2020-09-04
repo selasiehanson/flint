@@ -32,6 +32,12 @@ val bad_request : string -> 'a http_context -> 'a http_context option Lwt.t
 
 val ok : string -> 'a http_context -> 'a http_context option Lwt.t
 
+val unauthorized : string -> 'a http_context -> 'a http_context option Lwt.t
+
+val not_found : string -> 'a http_context -> 'a http_context option Lwt.t
+
+val internal_server_error : string -> 'a http_context -> 'a http_context option Lwt.t
+
 module Writers : sig
   (* todo define other mime types *)
   val as_mime : string -> 'a http_context -> 'a http_context
@@ -62,5 +68,8 @@ val get_content_length : Core.String.t -> int
 val read_request_body : Httpaf.Reqd.t -> string Lwt.t
 
 val make_router : (Httpaf.Method.t * string * 'a server) list -> 'a -> 'b -> Httpaf.Reqd.t -> unit
+
+val make_simple_handler :
+  (Httpaf.Method.t * string list -> 'a server) -> 'a -> 'c -> Httpaf.Reqd.t -> unit
 
 val error_handler : Unix.sockaddr -> Httpaf.Server_connection.error_handler
