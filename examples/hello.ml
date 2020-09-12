@@ -15,13 +15,11 @@ module User_handler = struct
 end
 
 let handlers = function
+  | `GET, [ "" ] -> fun ctx -> ctx |> Web.ok "index page"
   | `GET, [ "hello" ] -> fun ctx -> Web.ok "Hello World" ctx
   | `GET, [ "users"; (_ as id); "show" ] -> User_handler.show_user id
   | `GET, [ "json" ] -> json_handler
-  | _ ->
-      fun ctx ->
-        print_endline "Not found" ;
-        ctx |> Web.not_found "not found"
+  | _ -> fun ctx -> ctx |> Web.not_found "not found"
 
 
 let () =

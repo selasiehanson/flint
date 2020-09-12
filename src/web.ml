@@ -222,7 +222,7 @@ let read_request_body reqd =
   next
 
 
-(* Remove path parameters *)
+(*TODO Remove path parameters *)
 (* Remove the begginning and trailing slashes if the exist *)
 let path_from_url url =
   let slash_strip_fn c = Char.(c = '/') in
@@ -232,8 +232,6 @@ let path_from_url url =
 let handle_request route handlers meth =
   let route_path = path_from_url route in
   let parts = String.split route_path ~on:'/' in
-  List.iter parts ~f:(fun i -> print_endline i) ;
-  parts |> List.length |> string_of_int |> print_endline ;
   handlers (meth, parts)
 
 
